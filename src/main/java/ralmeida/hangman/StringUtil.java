@@ -1,5 +1,7 @@
 package ralmeida.hangman;
 
+import java.text.Normalizer;
+
 /**
  * Utility class for String operations
  * 
@@ -27,5 +29,23 @@ public class StringUtil {
         }
         
         return sb.toString();
+    }
+    
+    /**
+     * Normalize a string by removing diacritical marks and non-A to Z letter and converts it to uppercase.
+     * 
+     * @param str the string to normalize
+     * 
+     * @return Normalized string
+     */
+    public static String normalize(String str) {
+        // Remove diacritical marks
+        String normalized = Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+        // Converts to uppercase
+        normalized = normalized.toUpperCase();
+        // Removes non-letters chars
+        normalized = normalized.replaceAll("[^A-Z- ]", "");
+        
+        return normalized;
     }
 }

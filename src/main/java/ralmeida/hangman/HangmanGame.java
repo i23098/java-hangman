@@ -13,7 +13,9 @@ public class HangmanGame {
     /** Char representing a letter that needs to be guessed */
     public static final char NOT_GUESSED_CHAR = '_';
 
-    /** The word that the player has to guess */
+    /** The word that the player has to guess (non-normalized, upper case) */
+    private final char[] originalWord;
+    /** The word that the player has to guess (normalized) */
     private final char[] word;
     /** The current guessed */
     private char[] currentGuess;
@@ -26,8 +28,20 @@ public class HangmanGame {
      * Instantiates a new Hangman Game.
      * 
      * @param word the word to be guessed.
+     * 
+     * @throws IllegalArgumentException if can't represent word with A to Z letters only.
      */
     public HangmanGame(String word) {
+        String originalWord = word;
+        word = StringUtil.normalize(word);
+        if (word.length() != originalWord.length()) {
+            throw new IllegalArgumentException("Unable to normalize [" + originalWord + "]");
+        }
+        if (word.contains("-") || word.contains(" ")) {
+            throw new IllegalArgumentException("Only simple word supported!");
+        }
+        
+        this.originalWord = originalWord.toUpperCase().toCharArray();
         this.word = word.toUpperCase().toCharArray();
         this.currentGuess = new char[word.length()];
         Arrays.fill(currentGuess, NOT_GUESSED_CHAR);
@@ -100,7 +114,7 @@ public class HangmanGame {
         boolean exists = false;
         for (int i = 0; i < word.length; i++) {
             if (word[i] == c) {
-                currentGuess[i] = c;
+                currentGuess[i] = originalWord[i];
                 exists = true;
             }
         }
