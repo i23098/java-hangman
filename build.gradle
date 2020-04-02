@@ -1,7 +1,14 @@
 apply plugin: 'java'
+apply plugin: 'application'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
     }
+}
+
+mainClassName = 'ralmeida.hangman.HangmanConsole'
+
+run {
+    standardInput = System.in
 }
