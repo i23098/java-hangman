@@ -76,7 +76,12 @@ public class HangmanConsole {
     }
     
     public static void main(String[] args) {
-        HangmanConsole hangmanConsole = new HangmanConsole("hangman");
+        if (args.length != 1) {
+            System.err.println("Must specify the word as argument!");
+            return;
+        }
+        
+        HangmanConsole hangmanConsole = new HangmanConsole(args[0]);
         hangmanConsole.play();
     }
 }
