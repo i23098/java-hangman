@@ -41,9 +41,15 @@ public class HangmanGame {
      * @param letter the letter to check.
      * 
      * @return true if the letter was already requested, false otherwise.
+     * 
+     * @throws IllegalArgumentException if not alphabetic char.
      */
     public boolean isRequested(char letter) {
         char c = Character.toUpperCase(letter);
+        if (c < 'A' || c > 'Z') {
+            throw new IllegalArgumentException("Invalid letter [" + letter + "]");
+        }
+
         return requestedLetters[c - 'A'];
     }
 
@@ -77,9 +83,15 @@ public class HangmanGame {
      * @param letter the letter to be requested.
      * 
      * @return false if request was not accepted (i.e. letter previously requested), true otherwise.
+     * 
+     * @throws IllegalArgumentException if not alphabetic char.
      */
     public boolean request(char letter) {
         char c = Character.toUpperCase(letter);
+        if (c < 'A' || c > 'Z') {
+            throw new IllegalArgumentException("Invalid letter [" + letter + "]");
+        }
+
         if (requestedLetters[c - 'A']) {
             return false; // already requested...
         }
