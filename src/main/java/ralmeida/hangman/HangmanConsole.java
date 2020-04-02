@@ -23,23 +23,60 @@ public class HangmanConsole {
      * Plays the game, interacting with the user until the game is over.
      */
     public void play() {
-        System.out.println("Welcome to Hangman!");
+        drawWelcome();
+        drawCurrentStatus();
         
-        System.out.printf("Errors: %d\nCurrent guess: %s\n", game.getNumErrors(), game.getCurrentGuess());
         while (!game.isGameOver()) {
             char letter = readLetter();
             
             game.request(letter);
             
-            System.out.printf("Errors: %d\nCurrent guess: %s\n", game.getNumErrors(), game.getCurrentGuess());
+            drawCurrentStatus();
         }
         
-        System.out.println("Game Over!");
-        if (game.isWin()) {
-            System.out.println("Congratulations! You Won!!!");
-        } else {
-            System.out.println("You Loose!!!");
+        drawGameOver();
+    }
+    
+    /**
+     * Draw "Welcome to hangman" message.
+     */
+    void drawWelcome() {
+        System.out.println("              _                             _\n" +
+                "             | |                           | |\n" +
+                "__      _____| | ___ ___  _ __ ___   ___   | |_ ___\n" +
+                "\\ \\ /\\ / / _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\  | __/ _ \\\n" +
+                " \\ V  V /  __/ | (_| (_) | | | | | |  __/  | || (_) |\n" +
+                "  \\_/\\_/ \\___|_|\\___\\___/|_| |_| |_|\\___|   \\__\\___/\n" +
+                "   _                                             \n" +
+                "  | |                                            \n" +
+                "  | |__   __ _ _ __   __ _ _ __ ___   __ _ _ __  \n" +
+                "  | '_ \\ / _` | '_ \\ / _` | '_ ` _ \\ / _` | '_ \\ \n" +
+                "  | | | | (_| | | | | (_| | | | | | | (_| | | | |\n" +
+                "  |_| |_|\\__,_|_| |_|\\__, |_| |_| |_|\\__,_|_| |_|\n" +
+                "                      __/ |                      \n" +
+                "                     |___/ \n");
+    }
+
+    /**
+     * Draw current hangman status.
+     */
+    void drawCurrentStatus() {
+        int nErrors = game.getNumErrors();
+        String currentGuess = StringUtil.spaceChars(game.getCurrentGuess());
+        
+        // Taken from http://ascii.co.uk/art/hangman
+        System.out.println("   _________");
+        System.out.println("   |/      |");
+        System.out.printf("   |%s\n", (nErrors == 0 ? "" : "      (_)"));
+        System.out.print("   |");
+        if (nErrors > 1) {
+            System.out.printf("      %c|%s", (nErrors < 5 ? ' ' : '\\'), (nErrors == 6 ? "/" : ""));
         }
+        System.out.println();
+        System.out.printf("   |       %c          %s\n", (nErrors > 1 ? '|' : ' '), currentGuess);
+        System.out.printf("   |%s%s\n", (nErrors > 2 ? "      /" : ""), (nErrors > 3 ? " \\" : ""));
+        System.out.println("   |");
+        System.out.println("___|___");
     }
     
     /**
@@ -72,6 +109,25 @@ public class HangmanConsole {
             }
             
             return letter;
+        }
+    }
+    
+    /**
+     * Draws final message.
+     */
+    void drawGameOver() {
+        System.out.println("\n" +
+                "  __ _  __ _ _ __ ___   ___    _____   _____ _ __\n" +
+                " / _` |/ _` | '_ ` _ \\ / _ \\  / _ \\ \\ / / _ \\ '__|\n" +
+                "| (_| | (_| | | | | | |  __/ | (_) \\ V /  __/ |\n" +
+                " \\__, |\\__,_|_| |_| |_|\\___|  \\___/ \\_/ \\___|_|\n" +
+                "  __/ |\n" +
+                " |___/\n");
+        
+        if (game.isWin()) {
+            System.out.println("\nCongratulations! You Won!!!");
+        } else {
+            System.out.println("\nYou Loose!!!");
         }
     }
     
