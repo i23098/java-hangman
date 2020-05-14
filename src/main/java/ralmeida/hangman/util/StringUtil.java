@@ -18,8 +18,14 @@ public class StringUtil {
      * @param str
      * 
      * @return String with space inserted between each character
+     * 
+     * @throws NullPointerException if str is null
      */
     public static String spaceChars(String str) {
+        if (str.equals("")) { // throws NullPointerException if str == null
+            return "";
+        }
+        
         StringBuilder sb = new StringBuilder(str.length()*2 - 1);
         for (int i=0; i<str.length(); i++) {
             sb.append(str.charAt(i));

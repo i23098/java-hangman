@@ -19,6 +19,19 @@ distributions {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.2'
+}
+
+// Must explicitly enable jUnit 5
+test {
+    useJUnitPlatform()
+}
+
 run {
     standardInput = System.in
 }
