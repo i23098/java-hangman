@@ -8,7 +8,7 @@ import java.util.Scanner;
  * @author Ricardo Almeida
  */
 public class HangmanConsole {
-    private final HangmanGame game;
+    private HangmanGame game;
     private final Scanner consoleScanner;
     
     /**
@@ -29,7 +29,7 @@ public class HangmanConsole {
         while (!game.isGameOver()) {
             char letter = readLetter();
             
-            game.request(letter);
+            game = game.withRequested(letter);
             
             drawCurrentStatus();
         }

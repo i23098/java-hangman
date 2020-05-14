@@ -1,9 +1,11 @@
 package ralmeida.hangman;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * This class represents one Hangman game.
+ * This class is Immutable and represents a Hangman game.
  * 
  * @author Ricardo Almeida
  */
@@ -14,24 +16,38 @@ public class HangmanGame {
     public static final char NOT_GUESSED_CHAR = '_';
 
     /** The word that the player has to guess (non-normalized, upper case) */
-    private final char[] originalWord;
+    private final String originalWord;
     /** The word that the player has to guess (normalized) */
-    private final char[] word;
+    private final transient String word;
     /** The current guessed */
-    private char[] currentGuess;
+    private final transient String currentGuess;
     /** The letters */
-    private boolean[] requestedLetters;
+    private final Set<Character> requestedLetters;
     /** number of errors */
-    private int numErrors;
+    private final transient int numErrors;
+    /** true if won, false otherwise */
+    private final transient boolean win;
 
     /**
-     * Instantiates a new Hangman Game.
+     * Instantiates a newly started Hangman Game.
      * 
      * @param word the word to be guessed.
      * 
      * @throws IllegalArgumentException if can't represent word with A to Z letters only.
      */
     public HangmanGame(String word) {
+        this(word, Collections.emptySet());
+    }
+    
+    /**
+     * Instantiates a Hangman Game.
+     * 
+     * @param word the word to be guessed.
+     * @param requestedLetters requested letters (Letters MUST be uppercase)
+     * 
+     * @throws IllegalArgumentException if can't represent word with A to Z letters only or if requested letters aren't A to Z letters only
+     */
+    private HangmanGame(String word, Set<Character> requestedLetters) {
         String originalWord = word;
         word = StringUtil.normalize(word);
         if (word.length() != originalWord.length()) {
@@ -41,12 +57,38 @@ public class HangmanGame {
             throw new IllegalArgumentException("Only simple word supported!");
         }
         
-        this.originalWord = originalWord.toUpperCase().toCharArray();
-        this.word = word.toUpperCase().toCharArray();
-        this.currentGuess = new char[word.length()];
-        Arrays.fill(currentGuess, NOT_GUESSED_CHAR);
-        this.requestedLetters = new boolean[26];
-        this.numErrors = 0;
+        for (char c : requestedLetters) {
+            if (c < 'A' || c > 'Z') {
+                throw new IllegalArgumentException("Invalid letter [" + c + "]");
+            }
+        }
+        
+        this.originalWord = originalWord.toUpperCase();
+        this.word = word.toUpperCase();
+        this.requestedLetters = Collections.unmodifiableSet(requestedLetters);
+        
+        StringBuilder currentGuess = new StringBuilder(word.length());
+        Set<Character> guessedLetters = new HashSet<>();
+        boolean notGuessed = false;
+        for (int i = 0; i < this.word.length(); i++) {
+            char c = this.word.charAt(i);
+            
+            if (requestedLetters.contains(c)) {
+                guessedLetters.add(c);
+                currentGuess.append(c);
+            } else {
+                currentGuess.append(NOT_GUESSED_CHAR);
+                notGuessed = true;
+            }
+        }
+        
+        this.currentGuess = currentGuess.toString();
+        this.numErrors = requestedLetters.size() - guessedLetters.size();
+        this.win = !notGuessed;
+        
+        if (numErrors > NUM_ERRORS_DEAD) {
+            throw new IllegalArgumentException("Too many requested wrong letters!");
+        }
     }
 
     /**
@@ -64,7 +106,7 @@ public class HangmanGame {
             throw new IllegalArgumentException("Invalid letter [" + letter + "]");
         }
 
-        return requestedLetters[c - 'A'];
+        return requestedLetters.contains(c);
     }
 
     /**
@@ -73,7 +115,7 @@ public class HangmanGame {
      * @return true if game is over, false otherwise.
      */
     public boolean isGameOver() {
-        return (numErrors == NUM_ERRORS_DEAD) || isWin();
+        return (numErrors == NUM_ERRORS_DEAD) || win;
     }
 
     /**
@@ -82,13 +124,7 @@ public class HangmanGame {
      * @return true if game is finished and won, false otherwise.
      */
     public boolean isWin() {
-        for (char c : currentGuess) {
-            if (c == NOT_GUESSED_CHAR) {
-                return false;
-            }
-        }
-
-        return true;
+        return win;
     }
 
     /**
@@ -100,31 +136,20 @@ public class HangmanGame {
      * 
      * @throws IllegalArgumentException if not alphabetic char.
      */
-    public boolean request(char letter) {
+    public HangmanGame withRequested(char letter) {
         char c = Character.toUpperCase(letter);
         if (c < 'A' || c > 'Z') {
             throw new IllegalArgumentException("Invalid letter [" + letter + "]");
         }
-
-        if (requestedLetters[c - 'A']) {
-            return false; // already requested...
-        }
-
-        // Update if guessed
-        boolean exists = false;
-        for (int i = 0; i < word.length; i++) {
-            if (word[i] == c) {
-                currentGuess[i] = originalWord[i];
-                exists = true;
-            }
-        }
-
-        if (!exists) {
-            numErrors++;
-        }
-        requestedLetters[c - 'A'] = true;
         
-        return true;
+        if (requestedLetters.contains(c)) {
+            return this;
+        }
+        
+        Set<Character> requestedLetters = new HashSet<>(this.requestedLetters);
+        requestedLetters.add(c);
+        
+        return new HangmanGame(originalWord, requestedLetters);
     }
     
     /**
