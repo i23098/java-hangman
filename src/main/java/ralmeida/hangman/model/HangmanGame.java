@@ -1,8 +1,10 @@
-package ralmeida.hangman;
+package ralmeida.hangman.model;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import ralmeida.hangman.util.StringUtil;
 
 /**
  * This class is Immutable and represents a Hangman game.

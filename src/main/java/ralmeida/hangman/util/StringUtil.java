@@ -1,4 +1,4 @@
-package ralmeida.hangman;
+package ralmeida.hangman.util;
 
 import java.text.Normalizer;
 

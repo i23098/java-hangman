@@ -2,6 +2,9 @@ package ralmeida.hangman;
 
 import java.util.Scanner;
 
+import ralmeida.hangman.model.HangmanGame;
+import ralmeida.hangman.util.StringUtil;
+
 /**
  * Allows Hangman to be played in the Console.
  * 
