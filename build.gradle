@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'application'
+apply plugin: 'war'
 
 java {
     toolchain {
@@ -7,31 +7,23 @@ java {
     }
 }
 
-mainClassName = 'ralmeida.hangman.HangmanConsole'
-
-distributions {
-    main {
-        contents {
-            from(javadoc) {
-                into 'docs'
-            }
-        }
-    }
+task distJavadocZip(type: Zip, dependsOn: javadoc) {
+    archiveBaseName = "${project.distsDirectory.get()}/${project.archivesBaseName}-javadoc"
+    from files(javadoc.destinationDir)
 }
+tasks.build.dependsOn(distJavadocZip)
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.2'
 }
 
 // Must explicitly enable jUnit 5
 test {
     useJUnitPlatform()
-}
-
-run {
-    standardInput = System.in
 }
