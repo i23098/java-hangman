@@ -1,9 +1,9 @@
-DROP DATABASE IF EXISTS hangman;
+DROP DATABASE IF EXISTS ${db.hangman};
 
-DROP USER IF EXISTS hangman_user;
+DROP USER IF EXISTS ${db.hangman.username};
 
-CREATE USER hangman_user with password 'password';
+CREATE USER ${db.hangman.username} with password '${db.hangman.password}';
 
-CREATE DATABASE hangman
-OWNER hangman_user
+CREATE DATABASE ${db.hangman}
+OWNER ${db.hangman.username}
 ENCODING 'UTF8';

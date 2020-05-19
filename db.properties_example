@@ -1,0 +1,7 @@
+db.host=127.0.0.1
+db.port=5432
+db.admin.username=postgres
+db.admin.password=password
+db.hangman=hangman
+db.hangman.username=hangman_user
+db.hangman.password=password

@@ -1,3 +1,3 @@
 #!/bin/bash
-PGPASSWORD=password psql -h 127.0.0.1 -p 5432 -U hangman_user -d hangman < schema.sql
-PGPASSWORD=password psql -h 127.0.0.1 -p 5432 -U hangman_user -d hangman < initDB.sql
+PGPASSWORD=${db.hangman.password} psql -h ${db.host} -p ${db.port} -U ${db.hangman.username} -d ${db.hangman} < schema.sql
+PGPASSWORD=${db.hangman.password} psql -h ${db.host} -p ${db.port} -U ${db.hangman.username} -d ${db.hangman} < initDB.sql

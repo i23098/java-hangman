@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 apply plugin: 'java'
 apply plugin: 'war'
 
@@ -30,19 +32,29 @@ test {
     useJUnitPlatform()
 }
 
+def dbProps = new Properties()
+file("db.properties").withInputStream { dbProps.load(it) }
+
 task processResourcesDB(type: Copy) {
     from 'src/main/db'
-    into (new java.io.File(project.buildDir, 'db'))
+    into "${project.buildDir}/db"
+    filter(ReplaceTokens, tokens: dbProps, beginToken : '${', endToken : '}')
+    filteringCharset = 'UTF-8'
 }
 processResources.dependsOn(processResourcesDB)
 
-task assembleDB(type: Zip) {
-    archiveFileName = "db.zip"
+task assembleDB(type: Zip, dependsOn: processResourcesDB) {
+    archiveFileName = 'db.zip'
     from "$buildDir/db"
     destinationDirectory = project.libsDirectory
 }
-assembleDB.shouldRunAfter(processResourcesDB) // ensure it is not run in parallel when dir is empty, skipping the task...
 assemble.dependsOn(assembleDB);
+
+war {
+    filesMatching('/META-INF/context.xml') {
+        filter(ReplaceTokens, tokens: dbProps, beginToken : '${', endToken : '}')
+    }
+}
 
 task deploy(type: Copy, dependsOn: war) {
     from war.archivePath

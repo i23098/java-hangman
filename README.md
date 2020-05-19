@@ -24,7 +24,9 @@ This is one of the best known games worldwide, still, there's no harm in having 
 
 ## DB
 
-Makes use of postgreSQL database. There are 3 scripts that get packed into `build/libs/db.zip`
+Makes use of postgreSQL database. DB properties should be set in `db.properties` file (copy from `db.properties.example`).
+
+There are 3 scripts that get packed into `build/libs/db.zip`
 
 - `db.sql` Creates hangman database and hangman_user to access it. Should be executed as admin
 - `schema.sql` Creates database schema. Should be executed as hangman_user
