@@ -20,6 +20,8 @@ repositories {
 dependencies {
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
     
+    runtimeOnly 'org.postgresql:postgresql:42.2.12'
+    
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.2'
 }
 
@@ -27,6 +29,20 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task processResourcesDB(type: Copy) {
+    from 'src/main/db'
+    into (new java.io.File(project.buildDir, 'db'))
+}
+processResources.dependsOn(processResourcesDB)
+
+task assembleDB(type: Zip) {
+    archiveFileName = "db.zip"
+    from "$buildDir/db"
+    destinationDirectory = project.libsDirectory
+}
+assembleDB.shouldRunAfter(processResourcesDB) // ensure it is not run in parallel when dir is empty, skipping the task...
+assemble.dependsOn(assembleDB);
 
 task deploy(type: Copy, dependsOn: war) {
     from war.archivePath

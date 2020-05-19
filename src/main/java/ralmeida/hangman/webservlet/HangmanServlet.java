@@ -1,14 +1,20 @@
 package ralmeida.hangman.webservlet;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
 
+import ralmeida.hangman.dao.WordDAO;
 import ralmeida.hangman.model.HangmanGame;
 
 /**
@@ -18,7 +24,8 @@ import ralmeida.hangman.model.HangmanGame;
  */
 @WebServlet("/game")
 public class HangmanServlet extends HttpServlet {
-    private static final String WORD_PARAM = "word";
+    private static final String DS_JNDI_NAME = "java:comp/env/jdbc/hangmanDS";
+    
     private static final String LETTER_PARAM = "letter";
     
     private static final String GAME_ATTR = "hangmanGame";
@@ -38,9 +45,9 @@ public class HangmanServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String word = request.getParameter(WORD_PARAM);
-        if (word != null) {
-            startNewGame(word, request, response);
+        String letter = request.getParameter(LETTER_PARAM);
+        if (letter == null) {
+            startNewGame(request, response);
             return;
         }
         
@@ -50,8 +57,7 @@ public class HangmanServlet extends HttpServlet {
             return;
         }
         
-        String letter = request.getParameter(LETTER_PARAM);
-        if (letter != null && letter.length() == 1) {
+        if (letter.length() == 1) {
             play(letter.charAt(0), request, response);
             return;
         }
@@ -62,14 +68,29 @@ public class HangmanServlet extends HttpServlet {
     /**
      * Starts a new hangman game. Game is stored in session.
      * 
-     * @param word word to guess
      * @param request HttpServletRequest
      * @param response HttpServletResponse
      * 
      * @throws ServletException
      * @throws IOException
      */
-    private void startNewGame(String word, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void startNewGame(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        DataSource ds;
+        try {
+            ds = (DataSource) new InitialContext().lookup(DS_JNDI_NAME);
+        } catch (NamingException e) {
+            throw new ServletException("Error doing JNDI lookup", e);
+        }
+        
+        String word;
+        try (Connection con = ds.getConnection()) {
+            WordDAO dao = new WordDAO(con);
+            
+            word = dao.getRandomWord();
+        } catch (SQLException e) {
+            throw new ServletException("Error loading word from DB", e);
+        }
+        
         HangmanGame hangmanGame = new HangmanGame(word);
         
         request.getSession().setAttribute(GAME_ATTR, hangmanGame);
