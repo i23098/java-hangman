@@ -53,9 +53,6 @@ public class HangmanGame {
         if (word.length() != originalWord.length()) {
             throw new IllegalArgumentException("Unable to normalize [" + originalWord + "]");
         }
-        if (word.contains("-") || word.contains(" ")) {
-            throw new IllegalArgumentException("Only simple word supported!");
-        }
         
         for (char c : requestedLetters) {
             if (c < 'A' || c > 'Z') {
@@ -73,7 +70,9 @@ public class HangmanGame {
         for (int i = 0; i < this.word.length(); i++) {
             char c = this.word.charAt(i);
             
-            if (requestedLetters.contains(c)) {
+            if (c == '-' || c == ' ') {
+                currentGuess.append(c);
+            } else if (requestedLetters.contains(c)) {
                 guessedLetters.add(c);
                 currentGuess.append(c);
             } else {
