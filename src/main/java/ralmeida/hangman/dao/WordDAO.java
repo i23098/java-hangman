@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Data Access Object to access words in DB
@@ -20,6 +22,14 @@ public class WordDAO {
            + " FROM word"
           + " LIMIT 1"
          + " OFFSET ?";
+    private static final String GET_ALL_WORDS_SQL =
+            "SELECT word"
+           + " FROM word"
+       + " ORDER BY word";
+    private static final String INSERT_WORD_SQL =
+            "INSERT"
+           + " INTO word(word)"
+         + " VALUES (?)";
     
     private final Connection con;
     
@@ -64,5 +74,42 @@ public class WordDAO {
         }
         
         return word;
+    }
+    
+    /**
+     * Gets all the words in the DB
+     * 
+     * @return
+     * 
+     * @throws SQLException If an error occurs accessing the DB
+     */
+    public List<String> getAllWords() throws SQLException {
+        List<String> words = new LinkedList<>();
+        try (
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(GET_ALL_WORDS_SQL);
+        ) {
+            while (rs.next()) {
+                String word = rs.getString(1);
+                words.add(word);
+            }
+        }
+        
+        return words;
+    }
+    
+    /**
+     * Inserts a word in the DB
+     * 
+     * @param word
+     * 
+     * @throws SQLException If an error occurs accessing the DB
+     */
+    public void addWord(String word) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(INSERT_WORD_SQL)) {
+            ps.setString(1, word);
+            
+            ps.executeUpdate();
+        }
     }
 }
