@@ -1,80 +1,19 @@
 package ralmeida.hangman.webservlet;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import ralmeida.hangman.dao.WordDAO;
-import ralmeida.hangman.model.HangmanGame;
-
-/**
- * This servlet handles hangman game requests.
- * 
- * @author ralmeida
- */
-@WebServlet("/game")
-public class HangmanServlet extends HttpServlet {
+public abstract class HangmanServlet extends HttpServlet {
     private static final String DS_JNDI_NAME = "java:comp/env/jdbc/hangmanDS";
+    private static final int TRANSACTION_ISOLATION_LEVEL = Connection.TRANSACTION_READ_COMMITTED;
     
-    private static final String LETTER_PARAM = "letter";
-    
-    private static final String GAME_ATTR = "hangmanGame";
-    
-    private static final String GAME_JSP = "/WEB-INF/jsp/game.jsp";
-    
-    /**
-     * Handles new game or letter request, based on the parametar passed.
-     * If "word" is passed, starts a new game with that word.
-     * If "letter" is passed, requests letter in existing game in session.
-     * 
-     * @param request HttpServletRequest
-     * @param response HttpServletResponse
-     * 
-     * @throws ServletException
-     * @throws IOException
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String letter = request.getParameter(LETTER_PARAM);
-        if (letter == null) {
-            startNewGame(request, response);
-            return;
-        }
-        
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute(GAME_ATTR) == null) {
-            response.sendRedirect("index.jsp");
-            return;
-        }
-        
-        if (letter.length() == 1) {
-            play(letter.charAt(0), request, response);
-            return;
-        }
-        
-        response.sendRedirect("index.jsp");
-    }
-    
-    /**
-     * Starts a new hangman game. Game is stored in session.
-     * 
-     * @param request HttpServletRequest
-     * @param response HttpServletResponse
-     * 
-     * @throws ServletException
-     * @throws IOException
-     */
-    private void startNewGame(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected Connection getConnection() throws ServletException, SQLException {
         DataSource ds;
         try {
             ds = (DataSource) new InitialContext().lookup(DS_JNDI_NAME);
@@ -82,40 +21,20 @@ public class HangmanServlet extends HttpServlet {
             throw new ServletException("Error doing JNDI lookup", e);
         }
         
-        String word;
-        try (Connection con = ds.getConnection()) {
-            WordDAO dao = new WordDAO(con);
-            
-            word = dao.getRandomWord();
+        Connection con = ds.getConnection();
+        try {
+            con.setAutoCommit(false);
+            con.setTransactionIsolation(TRANSACTION_ISOLATION_LEVEL);
         } catch (SQLException e) {
-            throw new ServletException("Error loading word from DB", e);
+            try {
+                con.close();
+            } catch (Exception ex) {
+                e.addSuppressed(ex);
+            }
+            
+            throw e;
         }
         
-        HangmanGame hangmanGame = new HangmanGame(word);
-        
-        request.getSession().setAttribute(GAME_ATTR, hangmanGame);
-        
-        request.getRequestDispatcher(GAME_JSP).forward(request, response);
-    }
-    
-    /**
-     * Requests a letter in an existing (in session) hangman game.
-     * 
-     * @param letter letter to request
-     * @param request HttpServletRequest
-     * @param response HttpServletResponse
-     * 
-     * @throws ServletException
-     * @throws IOException
-     */
-    private void play(char letter, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        HangmanGame hangmanGame = (HangmanGame) session.getAttribute(GAME_ATTR);
-        
-        hangmanGame = hangmanGame.withRequested(letter);
-        
-        session.setAttribute(GAME_ATTR, hangmanGame);
-        
-        request.getRequestDispatcher(GAME_JSP).forward(request, response);
+        return con;
     }
 }
