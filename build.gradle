@@ -27,3 +27,8 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task deploy(type: Copy, dependsOn: war) {
+    from war.archivePath
+    into "${tomcatHome}/webapps"
+}
