@@ -9,6 +9,16 @@ java {
 
 mainClassName = 'ralmeida.hangman.HangmanConsole'
 
+distributions {
+    main {
+        contents {
+            from(javadoc) {
+                into 'docs'
+            }
+        }
+    }
+}
+
 run {
     standardInput = System.in
 }
